@@ -95,6 +95,7 @@ the agents do the typing.
 - [What it does](#what-it-does)
 - [Architecture](#architecture)
 - [Tested hardware](#tested-hardware)
+- [Prerequisites](#prerequisites)
 - [Quick start](#quick-start)
 - [Set up the microphone](#set-up-the-microphone)
 - [Add a camera](#add-a-camera)
@@ -217,10 +218,30 @@ work; the notes say what matters.
 The EM-01 has no capture gain control, so its gain cannot drift. Both of its
 channels carry the same capsule; StompWatch uses one and never sums them.
 
-## Quick start
+## Prerequisites
 
-You need a Linux box (the target), and a computer to build on with Go 1.25
-or later. Node 22 or later is needed only if you change the dashboard.
+**The box that measures (the target)**
+
+- A Debian-based Linux computer with systemd, x86-64 or arm64, with 2 cores
+  and 4 GB of memory or more.
+- A local disk mounted at `/data` for the recordings. Not a network share.
+- A USB measurement microphone that offers S24_3LE, 2 channels, 48 kHz,
+  ideally with its calibration file.
+- `alsa-utils`. Also `ffmpeg` if you add a camera, and `sqlite3` for the
+  checks below.
+- A working clock (NTP), and the box's timezone set.
+- Optional: an RTSP camera, and Tailscale or another way to reach the
+  dashboard from your devices.
+
+**The computer you build on**
+
+- Go 1.25 or later, `make`, and SSH access to the target with `sudo`.
+- Node 22 or later, only if you change the dashboard.
+
+**Optional:** a 94 dB SPL, 1 kHz sound calibrator, to measure the
+microphone's sensitivity instead of trusting the datasheet.
+
+## Quick start
 
 ### 1. Build
 
@@ -242,8 +263,8 @@ On the target, install the ALSA tools, and ffmpeg if you have a camera:
 sudo apt install alsa-utils ffmpeg sqlite3
 ```
 
-Mount a disk at `/data`, with a line in `/etc/fstab`. Set the timezone of the box, because quiet hours,
-the daily jobs, and every printed time use it:
+Mount a disk at `/data`, with a line in `/etc/fstab`. Set the timezone of
+the box, because quiet hours, the daily jobs, and every printed time use it:
 
 ```bash
 sudo timedatectl set-timezone Your/Zone
