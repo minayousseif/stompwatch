@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-// These are lines real ffmpeg builds print for a Reolink stream. The probe
+// These are lines real ffmpeg builds print for a Reolink stream. The camera test
 // reads the resolution and the rate from them (SPEC.md section 7).
 func TestParseStreamInfoReadsFFmpegOutput(t *testing.T) {
 	tests := []struct {
@@ -36,20 +36,20 @@ func TestParseStreamInfoReadsFFmpegOutput(t *testing.T) {
 	}
 }
 
-// probe-camera tries each path in order and reports which works. The
+// test-camera tries each path in order and reports which works. The
 // report is what the owner reads, so the password is masked everywhere in
 // it, including the part ffmpeg wrote.
-func TestProbeTriesEachPathAndMasksThePassword(t *testing.T) {
-	cmd, argv, env := fake(t, "probe", map[string]string{
-		"FAKE_PROBE_OK":   "h264Preview_01_sub",
-		"FAKE_PROBE_INFO": "Input #0, rtsp\n  Stream #0:0: Video: h264 (Main), yuv420p(progressive), 640x360, 15 fps, 15 tbr, 90k tbn\n",
-		"FAKE_STDERR":     "401 Unauthorized",
+func TestCameraTestTriesEachPathAndMasksThePassword(t *testing.T) {
+	cmd, argv, env := fake(t, "test", map[string]string{
+		"FAKE_TEST_OK":   "h264Preview_01_sub",
+		"FAKE_TEST_INFO": "Input #0, rtsp\n  Stream #0:0: Video: h264 (Main), yuv420p(progressive), 640x360, 15 fps, 15 tbr, 90k tbn\n",
+		"FAKE_STDERR":    "401 Unauthorized",
 	})
 	base := Stream{Host: "cam.local", Port: 554, Creds: Credentials{User: "admin", Pass: testPass}}
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 
-	rep := Probe(ctx, cmd, env, base, CandidatePaths(""))
+	rep := TryPaths(ctx, cmd, env, base, CandidatePaths(""))
 	if rep.Working == nil {
 		t.Fatalf("no working stream found:\n%s", rep)
 	}
@@ -82,15 +82,15 @@ func TestProbeTriesEachPathAndMasksThePassword(t *testing.T) {
 	}
 	for _, run := range runs {
 		if !hasPair(run, "-rtsp_transport", "tcp") || !contains(run, "-an") {
-			t.Errorf("probe ran ffmpeg without tcp or -an: %v", run)
+			t.Errorf("the camera test ran ffmpeg without tcp or -an: %v", run)
 		}
 	}
 }
 
-func TestProbeReportsWhenNothingWorks(t *testing.T) {
-	cmd, _, env := fake(t, "probe", map[string]string{"FAKE_STDERR": "Connection timed out"})
+func TestCameraTestReportsWhenNothingWorks(t *testing.T) {
+	cmd, _, env := fake(t, "test", map[string]string{"FAKE_STDERR": "Connection timed out"})
 	base := Stream{Host: "cam.local", Port: 554, Creds: Credentials{User: "admin", Pass: testPass}}
-	rep := Probe(context.Background(), cmd, env, base, []string{"a", "b"})
+	rep := TryPaths(context.Background(), cmd, env, base, []string{"a", "b"})
 	if rep.Working != nil {
 		t.Fatal("a stream was reported working")
 	}
@@ -112,7 +112,7 @@ func contains(args []string, want string) bool {
 }
 
 // Many cameras send no audio track, and then camera_audio does nothing. The
-// probe has to say which kind the camera is, so the owner is not left to
+// camera test has to say which kind the camera is, so the owner is not left to
 // wonder (SPEC.md section 15 decision 22). These are lines real ffmpeg
 // builds print for the input, which it lists whether or not -an is given.
 func TestParseStreamInfoReadsTheAudioTrack(t *testing.T) {

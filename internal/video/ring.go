@@ -69,7 +69,7 @@ type RingConfig struct {
 	Dir string // the ring directory; created if missing
 	// Streams are the URLs to try. Each restart moves to the next one, so
 	// a camera on older firmware is found by its second path without a
-	// probe having to succeed first (SPEC.md section 7).
+	// camera test having to succeed first (SPEC.md section 7).
 	Streams        []Stream
 	SegmentSeconds int
 	Keep           time.Duration // how much of the ring to keep

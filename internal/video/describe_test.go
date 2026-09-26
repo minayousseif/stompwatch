@@ -94,18 +94,18 @@ func TestVersionIsEmptyWhenFFmpegIsNotInstalled(t *testing.T) {
 	}
 }
 
-// ProbeCamera is the one implementation behind probe-camera and the
+// RunCameraTest is the one implementation behind test-camera and the
 // dashboard's test button. It tries the sub paths in order, then the main
 // stream derived from the one that worked.
-func TestProbeCameraTriesTheSubPathsThenTheMainStream(t *testing.T) {
-	cmd, argv, env := fake(t, "probe", map[string]string{
-		"FAKE_PROBE_OK":   "Preview_01_",
-		"FAKE_PROBE_INFO": "Input #0, rtsp\n  Stream #0:0: Video: h264 (Main), yuv420p(progressive), 640x360, 15 fps, 15 tbr, 90k tbn\n",
-		"FAKE_STDERR":     "401 Unauthorized",
+func TestCameraTestTriesTheSubPathsThenTheMainStream(t *testing.T) {
+	cmd, argv, env := fake(t, "test", map[string]string{
+		"FAKE_TEST_OK":   "Preview_01_",
+		"FAKE_TEST_INFO": "Input #0, rtsp\n  Stream #0:0: Video: h264 (Main), yuv420p(progressive), 640x360, 15 fps, 15 tbr, 90k tbn\n",
+		"FAKE_STDERR":    "401 Unauthorized",
 	})
 	base := Stream{Host: "cam.local", Port: 554, Creds: Credentials{User: "admin", Pass: testPass}}
 
-	rep := ProbeCamera(context.Background(), cmd, env, base, CandidatePaths(""), "")
+	rep := RunCameraTest(context.Background(), cmd, env, base, CandidatePaths(""), "")
 	if rep.Sub.Working == nil {
 		t.Fatalf("no sub path worked:\n%s", rep.Sub)
 	}
@@ -125,14 +125,14 @@ func TestProbeCameraTriesTheSubPathsThenTheMainStream(t *testing.T) {
 }
 
 // A configured main path is tried as it stands, not derived.
-func TestProbeCameraUsesTheConfiguredMainPath(t *testing.T) {
-	cmd, _, env := fake(t, "probe", map[string]string{
-		"FAKE_PROBE_OK":   "Preview",
-		"FAKE_PROBE_INFO": "  Stream #0:0: Video: h264, yuv420p, 640x360, 15 fps, 15 tbr, 90k tbn\n",
+func TestCameraTestUsesTheConfiguredMainPath(t *testing.T) {
+	cmd, _, env := fake(t, "test", map[string]string{
+		"FAKE_TEST_OK":   "Preview",
+		"FAKE_TEST_INFO": "  Stream #0:0: Video: h264, yuv420p, 640x360, 15 fps, 15 tbr, 90k tbn\n",
 	})
 	base := Stream{Host: "cam.local", Port: 554, Creds: Credentials{User: "admin", Pass: testPass}}
 
-	rep := ProbeCamera(context.Background(), cmd, env, base, []string{"Preview_01_sub"}, "Preview_02_main")
+	rep := RunCameraTest(context.Background(), cmd, env, base, []string{"Preview_01_sub"}, "Preview_02_main")
 	if rep.MainPath != "Preview_02_main" {
 		t.Errorf("MainPath = %q, want the configured \"Preview_02_main\"", rep.MainPath)
 	}
@@ -140,11 +140,11 @@ func TestProbeCameraUsesTheConfiguredMainPath(t *testing.T) {
 
 // With no sub path working there is nothing to derive a main path from, so
 // the main stream is not tried at all.
-func TestProbeCameraSkipsTheMainStreamWhenNoSubPathWorks(t *testing.T) {
-	cmd, argv, env := fake(t, "probe", map[string]string{"FAKE_STDERR": "Connection timed out"})
+func TestCameraTestSkipsTheMainStreamWhenNoSubPathWorks(t *testing.T) {
+	cmd, argv, env := fake(t, "test", map[string]string{"FAKE_STDERR": "Connection timed out"})
 	base := Stream{Host: "cam.local", Port: 554, Creds: Credentials{User: "admin", Pass: testPass}}
 
-	rep := ProbeCamera(context.Background(), cmd, env, base, CandidatePaths(""), "")
+	rep := RunCameraTest(context.Background(), cmd, env, base, CandidatePaths(""), "")
 	if rep.Sub.Working != nil {
 		t.Fatal("a sub path was reported working")
 	}
@@ -160,11 +160,11 @@ func TestProbeCameraSkipsTheMainStreamWhenNoSubPathWorks(t *testing.T) {
 
 // Nothing in the report may hold the password, in either the plain or the
 // escaped form, whatever ffmpeg printed.
-func TestProbeCameraNeverReportsThePassword(t *testing.T) {
-	cmd, _, env := fake(t, "probe", map[string]string{"FAKE_STDERR": "401 Unauthorized"})
+func TestCameraTestNeverReportsThePassword(t *testing.T) {
+	cmd, _, env := fake(t, "test", map[string]string{"FAKE_STDERR": "401 Unauthorized"})
 	base := Stream{Host: "cam.local", Port: 554, Creds: Credentials{User: "admin", Pass: testPass}}
 
-	rep := ProbeCamera(context.Background(), cmd, env, base, CandidatePaths(""), "")
+	rep := RunCameraTest(context.Background(), cmd, env, base, CandidatePaths(""), "")
 	text := rep.Sub.String() + rep.Main.String()
 	for _, a := range rep.Sub.Tried {
 		if a.Err != nil {
@@ -181,15 +181,15 @@ func TestProbeCameraNeverReportsThePassword(t *testing.T) {
 	}
 }
 
-// A deadline stops the probe. The caller needs to be able to tell that it
+// A deadline stops the camera test. The caller needs to be able to tell that it
 // ran out of time rather than that the camera refused.
-func TestProbeCameraStopsAtItsDeadline(t *testing.T) {
-	cmd, _, env := fake(t, "probe", map[string]string{"FAKE_STDERR": "401 Unauthorized"})
+func TestCameraTestStopsAtItsDeadline(t *testing.T) {
+	cmd, _, env := fake(t, "test", map[string]string{"FAKE_STDERR": "401 Unauthorized"})
 	base := Stream{Host: "cam.local", Port: 554, Creds: Credentials{User: "admin", Pass: testPass}}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond)
 	defer cancel()
 
-	rep := ProbeCamera(ctx, cmd, env, base, CandidatePaths(""), "")
+	rep := RunCameraTest(ctx, cmd, env, base, CandidatePaths(""), "")
 	if rep.Sub.Working != nil {
 		t.Error("a stream worked after the deadline passed")
 	}

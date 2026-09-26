@@ -17,7 +17,7 @@ import (
 // fakeFFmpeg instead of the tests, and the environment says what it does.
 //
 //	FAKE_ARGV        file the argument list is appended to, one run per block
-//	FAKE_MODE        segments | probe | concat | version
+//	FAKE_MODE        segments | test | concat | version
 //	FAKE_STDERR      text printed to stderr before exit
 //	FAKE_EXIT        exit status
 //
@@ -29,10 +29,10 @@ import (
 //	FAKE_INTERVAL_MS real time between segments
 //	FAKE_HANG        write one segment, then write nothing more
 //
-// For probe:
+// For test:
 //
-//	FAKE_PROBE_OK    a URL that contains this text succeeds; others fail
-//	FAKE_PROBE_INFO  stderr for a success, in ffmpeg's stream-info form
+//	FAKE_TEST_OK    a URL that contains this text succeeds; others fail
+//	FAKE_TEST_INFO  stderr for a success, in ffmpeg's stream-info form
 //
 // For concat:
 //
@@ -66,15 +66,15 @@ func fakeFFmpeg() int {
 	switch os.Getenv("FAKE_MODE") {
 	case "segments":
 		return fakeSegments(args, exit)
-	case "probe":
+	case "test":
 		url := args[len(args)-1]
 		for i, a := range args {
 			if a == "-i" && i+1 < len(args) {
 				url = args[i+1]
 			}
 		}
-		if ok := os.Getenv("FAKE_PROBE_OK"); ok != "" && strings.Contains(url, ok) {
-			fmt.Fprint(os.Stderr, os.Getenv("FAKE_PROBE_INFO"))
+		if ok := os.Getenv("FAKE_TEST_OK"); ok != "" && strings.Contains(url, ok) {
+			fmt.Fprint(os.Stderr, os.Getenv("FAKE_TEST_INFO"))
 			return 0
 		}
 		// Real ffmpeg names the URL it was given, password and all.

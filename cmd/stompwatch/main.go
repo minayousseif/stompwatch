@@ -4,7 +4,7 @@
 //	stompwatch run          -config FILE [-input WAV] [-ffmpeg PATH]
 //	stompwatch calibrate    -config FILE [-input WAV] [-seconds N] [-reference TEXT]
 //	stompwatch verify-dsp   -config FILE
-//	stompwatch probe-camera -config FILE [-host HOST] [-ffmpeg PATH]
+//	stompwatch test-camera -config FILE [-host HOST] [-ffmpeg PATH]
 //	stompwatch reset        -config FILE [-yes] [-reviewed]
 package main
 
@@ -49,7 +49,7 @@ commands:
   run         measure, detect, and record until stopped
   calibrate   read a 94 dB SPL calibrator tone and print the sensitivity block
   verify-dsp  check the measurement chain and print a report
-  probe-camera
+  test-camera
               try the camera's RTSP paths and print which works
   reset       remove the recorded data and keep the configuration
 
@@ -80,8 +80,8 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return cmdCalibrate(args[2:], stdout, stderr)
 	case "verify-dsp":
 		return cmdVerify(args[2:], stdout, stderr)
-	case "probe-camera":
-		return cmdProbeCamera(args[2:], stdout, stderr)
+	case "test-camera":
+		return cmdTestCamera(args[2:], stdout, stderr)
 	case "reset":
 		return cmdReset(args[2:], stdout, stderr)
 	case "help", "-h", "--help":
@@ -593,7 +593,7 @@ type dashboard struct {
 	// record writes a system_health row.
 	record func(at time.Time, kind, detail string, d time.Duration)
 	// The camera login and ffmpeg, read whether or not video is on. login
-	// holds the password, and only the stream URL the probe hands ffmpeg
+	// holds the password, and only the stream URL the camera test hands ffmpeg
 	// ever reads it.
 	ffmpeg        video.Command
 	ffmpegVersion string

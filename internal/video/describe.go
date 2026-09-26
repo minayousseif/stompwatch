@@ -70,8 +70,8 @@ func Version(c Command, env []string) string {
 	return strings.TrimSpace(line)
 }
 
-// clockProbeTimeout bounds the camera clock reading inside a full probe.
-const clockProbeTimeout = 10 * time.Second
+// clockCheckTimeout bounds the camera clock reading inside a full camera test.
+const clockCheckTimeout = 10 * time.Second
 
 // CameraReport is everything a full camera test found: the sub-stream paths
 // tried, the main stream, and the camera clock.
@@ -92,13 +92,13 @@ type CameraReport struct {
 // stream answered and there was nothing to test against.
 var ErrClockNotRead = errors.New("video: the camera clock was not read, because no stream answered")
 
-// ProbeCamera tries the sub-stream paths in order, then the main stream, then
-// reads the camera clock. One implementation serves stompwatch probe-camera
-// and POST /api/camera/probe, so the two can never disagree about what
+// RunCameraTest tries the sub-stream paths in order, then the main stream, then
+// reads the camera clock. One implementation serves stompwatch test-camera
+// and POST /api/camera/test, so the two can never disagree about what
 // works. Nothing it returns holds a password (SPEC.md section 7).
-func ProbeCamera(ctx context.Context, cmd Command, env []string, base Stream,
+func RunCameraTest(ctx context.Context, cmd Command, env []string, base Stream,
 	subPaths []string, mainPath string) CameraReport {
-	rep := CameraReport{Sub: Probe(ctx, cmd, env, base, subPaths)}
+	rep := CameraReport{Sub: TryPaths(ctx, cmd, env, base, subPaths)}
 	if rep.Sub.Working == nil {
 		// There is no stream to derive a main path from, and no reason to
 		// believe the main path would answer when the sub path did not.
@@ -110,9 +110,9 @@ func ProbeCamera(ctx context.Context, cmd Command, env []string, base Stream,
 		rep.MainPath = MainPath(rep.Sub.Working.Stream.Path)
 	}
 	if rep.MainPath != "" {
-		rep.Main = Probe(ctx, cmd, env, base, []string{rep.MainPath})
+		rep.Main = TryPaths(ctx, cmd, env, base, []string{rep.MainPath})
 	}
-	cctx, cancel := context.WithTimeout(ctx, clockProbeTimeout)
+	cctx, cancel := context.WithTimeout(ctx, clockCheckTimeout)
 	defer cancel()
 	rep.ClockOffset, rep.ClockErr = CameraOffset(cctx, base)
 	return rep

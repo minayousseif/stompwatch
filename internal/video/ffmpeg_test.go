@@ -47,7 +47,7 @@ func TestEveryFFmpegCommandDropsAudioByDefault(t *testing.T) {
 	s := testStream("Preview_01_sub")
 	for name, args := range map[string][]string{
 		"ring":   RingArgs(s, 10, "/ring/%Y%m%dT%H%M%SZ.ts", false),
-		"probe":  ProbeArgs(s),
+		"test":   StreamTestArgs(s),
 		"concat": ConcatArgs("/tmp/list.txt", "/tmp/out.mp4", false),
 	} {
 		if !slices.Contains(args, "-an") {
@@ -80,11 +80,11 @@ func TestCameraAudioKeepsTheAudioTrackInWhatIsWritten(t *testing.T) {
 			t.Errorf("%s: %q re-encodes the video or trims: %v", name, a, args)
 		}
 	}
-	// The probe keeps -an whichever way the setting is set. It throws its
+	// The camera test keeps -an whichever way the setting is set. It throws its
 	// output away, and it learns about audio from the stream list ffmpeg
 	// prints about its input.
-	if !slices.Contains(ProbeArgs(s), "-an") {
-		t.Error("the probe dropped -an; it records nothing and needs none")
+	if !slices.Contains(StreamTestArgs(s), "-an") {
+		t.Error("the camera test dropped -an; it records nothing and needs none")
 	}
 }
 
@@ -259,9 +259,9 @@ func TestConcatArgsCopyIntoAnMP4(t *testing.T) {
 	}
 }
 
-func TestProbeArgsReadOneFrameAndDiscardIt(t *testing.T) {
+func TestCameraTestArgsReadOneFrameAndDiscardIt(t *testing.T) {
 	s := testStream("Preview_01_sub")
-	args := ProbeArgs(s)
+	args := StreamTestArgs(s)
 	for _, want := range [][2]string{
 		{"-rtsp_transport", "tcp"},
 		{"-i", s.URL()},

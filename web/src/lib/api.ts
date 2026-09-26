@@ -460,7 +460,7 @@ export interface AudioTrack {
 }
 
 /** What the camera test found. Every `detail` has had the password removed. */
-export interface ProbeResult {
+export interface CameraTestResult {
   tried: { path: string; ok: boolean; detail: string }[]
   /** The paths that answered, or empty when none did. */
   sub_path: string
@@ -694,12 +694,12 @@ export const api = {
   },
 
   /**
-   * POST /api/camera/probe. Tries each RTSP path on the camera and reports
+   * POST /api/camera/test. Tries each RTSP path on the camera and reports
    * what works. It changes no setting: the owner applies what it found
    * through the settings form. One runs at a time; a second gets 409.
    */
-  probeCamera(signal?: AbortSignal): Promise<ProbeResult> {
-    return send(`/api/camera/probe`, "POST", undefined, signal)
+  testCamera(signal?: AbortSignal): Promise<CameraTestResult> {
+    return send(`/api/camera/test`, "POST", undefined, signal)
   },
 
   /** GET /api/logs */

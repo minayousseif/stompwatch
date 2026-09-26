@@ -18,7 +18,7 @@ import (
 const camPass = "p@ss:w/rd#1"
 
 // fakeFFmpegScript writes a shell script that stands in for ffmpeg. works
-// is the text a URL must contain for the probe to succeed; the rest fail
+// is the text a URL must contain for the camera test to succeed; the rest fail
 // the way ffmpeg fails, naming the URL it was given.
 func fakeFFmpegScript(t *testing.T, works string) string {
 	return fakeFFmpegScriptLines(t, works, "")
@@ -77,15 +77,15 @@ func noPassword(t *testing.T, what, text string) {
 	}
 }
 
-// SPEC.md section 7: probe-camera tries each path form, reports which works, and
+// SPEC.md section 7: test-camera tries each path form, reports which works, and
 // prints the resolution and frame rate. The owner reads this, so the
 // password is masked everywhere.
-func TestProbeCameraReportsTheWorkingPath(t *testing.T) {
+func TestCameraTestReportsTheWorkingPath(t *testing.T) {
 	setCameraLogin(t)
 	cfg, _ := writeConfig(t, "camera_host = cam.invalid")
 	ffmpeg := fakeFFmpegScript(t, "h264Preview_01_")
 
-	code, stdout, stderr := runCmd("probe-camera", "-config", cfg, "-ffmpeg", ffmpeg)
+	code, stdout, stderr := runCmd("test-camera", "-config", cfg, "-ffmpeg", ffmpeg)
 	if code != 0 {
 		t.Fatalf("exit %d\nstdout:\n%s\nstderr:\n%s", code, stdout, stderr)
 	}
@@ -105,12 +105,12 @@ func TestProbeCameraReportsTheWorkingPath(t *testing.T) {
 	noPassword(t, "stderr", stderr)
 }
 
-func TestProbeCameraFailsWhenNoPathWorks(t *testing.T) {
+func TestCameraTestFailsWhenNoPathWorks(t *testing.T) {
 	setCameraLogin(t)
 	cfg, _ := writeConfig(t, "camera_host = cam.invalid")
 	ffmpeg := fakeFFmpegScript(t, "")
 
-	code, stdout, stderr := runCmd("probe-camera", "-config", cfg, "-ffmpeg", ffmpeg)
+	code, stdout, stderr := runCmd("test-camera", "-config", cfg, "-ffmpeg", ffmpeg)
 	if code == 0 {
 		t.Fatalf("exit 0 with no working path\n%s", stdout)
 	}
@@ -123,16 +123,16 @@ func TestProbeCameraFailsWhenNoPathWorks(t *testing.T) {
 	noPassword(t, "stderr", stderr)
 }
 
-func TestProbeCameraNeedsALoginAndAHost(t *testing.T) {
+func TestCameraTestNeedsALoginAndAHost(t *testing.T) {
 	cfg, _ := writeConfig(t, "camera_host = cam.invalid")
-	code, _, stderr := runCmd("probe-camera", "-config", cfg, "-ffmpeg", fakeFFmpegScript(t, ""))
+	code, _, stderr := runCmd("test-camera", "-config", cfg, "-ffmpeg", fakeFFmpegScript(t, ""))
 	if code == 0 || !strings.Contains(stderr, "CAMERA_USER") {
 		t.Errorf("without a login: exit %d, stderr %q", code, stderr)
 	}
 
 	setCameraLogin(t)
 	cfg, _ = writeConfig(t)
-	code, _, stderr = runCmd("probe-camera", "-config", cfg, "-ffmpeg", fakeFFmpegScript(t, ""))
+	code, _, stderr = runCmd("test-camera", "-config", cfg, "-ffmpeg", fakeFFmpegScript(t, ""))
 	if code == 0 || !strings.Contains(stderr, "camera_host") {
 		t.Errorf("without a host: exit %d, stderr %q", code, stderr)
 	}
@@ -289,12 +289,12 @@ func TestTheClockLinesNameTheirUnit(t *testing.T) {
 }
 
 // SPEC.md section 15 decision 22: camera_audio does nothing on a camera that
-// sends no audio track, so probe-camera says which kind the camera is.
-func TestProbeCameraSaysWhetherTheCameraSendsAudio(t *testing.T) {
+// sends no audio track, so test-camera says which kind the camera is.
+func TestCameraTestSaysWhetherTheCameraSendsAudio(t *testing.T) {
 	setCameraLogin(t)
 	cfg, _ := writeConfig(t, "camera_host = cam.invalid")
 
-	code, stdout, stderr := runCmd("probe-camera", "-config", cfg,
+	code, stdout, stderr := runCmd("test-camera", "-config", cfg,
 		"-ffmpeg", fakeFFmpegScript(t, "h264Preview_01_"))
 	if code != 0 {
 		t.Fatalf("exit %d\nstdout:\n%s\nstderr:\n%s", code, stdout, stderr)
@@ -306,7 +306,7 @@ func TestProbeCameraSaysWhetherTheCameraSendsAudio(t *testing.T) {
 	// The first run took the login out of the environment, as a real run
 	// does, so the second one needs it put back.
 	setCameraLogin(t)
-	code, stdout, stderr = runCmd("probe-camera", "-config", cfg,
+	code, stdout, stderr = runCmd("test-camera", "-config", cfg,
 		"-ffmpeg", fakeFFmpegScriptWithAudio(t, "h264Preview_01_"))
 	if code != 0 {
 		t.Fatalf("exit %d\nstdout:\n%s\nstderr:\n%s", code, stdout, stderr)
@@ -343,7 +343,7 @@ func TestTheStartLineOnlyClaimsTheAudioTheRingKeeps(t *testing.T) {
 		log := slog.New(slog.NewJSONHandler(&buf, nil))
 		a, known := checkCameraAudio(video.Command{ffmpeg}, streams, ring, log)
 		if !known || !a.Present {
-			t.Fatalf("recording = %v: the probe did not find the audio track: %s", recording, buf.String())
+			t.Fatalf("recording = %v: the camera test did not find the audio track: %s", recording, buf.String())
 		}
 		return buf.String()
 	}
@@ -507,11 +507,11 @@ func TestRunKeepsTheLoginOutOfEveryChildsEnvironment(t *testing.T) {
 	checkNoLoginInChildren(t, envFile, argsFile)
 }
 
-func TestProbeCameraKeepsTheLoginOutOfFFmpegsEnvironment(t *testing.T) {
+func TestCameraTestKeepsTheLoginOutOfFFmpegsEnvironment(t *testing.T) {
 	setCameraLogin(t)
 	cfg, _ := writeConfig(t, "camera_host = cam.invalid")
 	ffmpeg, envFile, argsFile := envFFmpeg(t)
 
-	runCmd("probe-camera", "-config", cfg, "-ffmpeg", ffmpeg)
+	runCmd("test-camera", "-config", cfg, "-ffmpeg", ffmpeg)
 	checkNoLoginInChildren(t, envFile, argsFile)
 }

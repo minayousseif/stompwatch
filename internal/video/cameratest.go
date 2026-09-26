@@ -13,7 +13,7 @@ import (
 
 // AudioInfo is the audio track the camera sends, if it sends one. Many
 // cameras have no microphone, and then camera_audio does nothing, so the
-// probe has to be able to say which kind the camera is
+// camera test has to be able to say which kind the camera is
 // (SPEC.md section 15 decision 22).
 type AudioInfo struct {
 	// Present is false when the stream carries no audio track. Codec and
@@ -39,7 +39,7 @@ type StreamInfo struct {
 	Width  int
 	Height int
 	FPS    float64
-	// Audio is the audio track of the same stream. The probe reads it from
+	// Audio is the audio track of the same stream. The camera test reads it from
 	// the input ffmpeg lists, which it prints whether or not -an is given,
 	// so finding out costs no extra connection and records nothing.
 	Audio AudioInfo
@@ -49,14 +49,14 @@ func (i StreamInfo) String() string {
 	return fmt.Sprintf("%dx%d at %g fps (%s), %s", i.Width, i.Height, i.FPS, i.Codec, i.Audio)
 }
 
-// Attempt is one stream the probe tried.
+// Attempt is one stream the camera test tried.
 type Attempt struct {
 	Stream Stream
 	Info   StreamInfo
 	Err    error // nil when the stream works
 }
 
-// Report is what probe-camera prints. Every string in it is masked.
+// Report is what test-camera prints. Every string in it is masked.
 type Report struct {
 	Tried   []Attempt
 	Working *Attempt // the first stream that worked, or nil
@@ -75,19 +75,19 @@ func (r Report) String() string {
 	return b.String()
 }
 
-// probeTimeout bounds one attempt. A camera that does not answer in this
+// pathTestTimeout bounds one attempt. A camera that does not answer in this
 // long is not going to.
-const probeTimeout = 20 * time.Second
+const pathTestTimeout = 20 * time.Second
 
-// Probe tries each path on the camera in order and stops at the first that
+// TryPaths tries each path on the camera in order and stops at the first that
 // delivers a frame (SPEC.md section 7). It never returns a password in any field.
-func Probe(ctx context.Context, cmd Command, env []string, base Stream, paths []string) Report {
+func TryPaths(ctx context.Context, cmd Command, env []string, base Stream, paths []string) Report {
 	var rep Report
 	for _, path := range paths {
 		s := base
 		s.Path = path
 		a := Attempt{Stream: s}
-		a.Info, a.Err = probeOne(ctx, cmd, env, s)
+		a.Info, a.Err = testOnePath(ctx, cmd, env, s)
 		rep.Tried = append(rep.Tried, a)
 		if a.Err == nil {
 			rep.Working = &rep.Tried[len(rep.Tried)-1]
@@ -97,10 +97,10 @@ func Probe(ctx context.Context, cmd Command, env []string, base Stream, paths []
 	return rep
 }
 
-func probeOne(ctx context.Context, cmd Command, env []string, s Stream) (StreamInfo, error) {
-	pctx, cancel := context.WithTimeout(ctx, probeTimeout)
+func testOnePath(ctx context.Context, cmd Command, env []string, s Stream) (StreamInfo, error) {
+	pctx, cancel := context.WithTimeout(ctx, pathTestTimeout)
 	defer cancel()
-	args := append(slices.Clone(cmd.leading()), ProbeArgs(s)...)
+	args := append(slices.Clone(cmd.leading()), StreamTestArgs(s)...)
 	c := exec.CommandContext(pctx, cmd.program(), args...)
 	c.Env = childEnv(env)
 	stderr := &tailBuffer{keep: 8192}

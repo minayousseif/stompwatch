@@ -374,8 +374,8 @@ triggers.
    `camera_credentials_file = /etc/stompwatch/camera.env` in the config, so
    the commands you run by hand find the login too. A credentials file that
    other users can read is refused, and `install-service` warns about it.
-2. **Probe.** Set `camera_host` in the config, then run
-   `sudo -u stompwatch stompwatch probe-camera -config /etc/stompwatch/stompwatch.conf`.
+2. **Test.** Set `camera_host` in the config, then run
+   `sudo -u stompwatch stompwatch test-camera -config /etc/stompwatch/stompwatch.conf`.
    It tries the known RTSP paths, prints which one works, the resolution,
    the frame rate, whether there is an audio track, and the config lines to
    add. The password is masked in everything it prints.
@@ -392,7 +392,7 @@ triggers.
 
    For a camera that is not on the list, put its path in
    `camera_rtsp_path` (and `camera_rtsp_path_main`) by hand.
-3. **Config.** Add the `camera_rtsp_path` line the probe printed. With it
+3. **Config.** Add the `camera_rtsp_path` line the camera test printed. With it
    empty, the collector tries the seven paths in turn, which takes about a
    minute.
 4. **Start.** Restart the service. The log says `video is on`, then
@@ -630,10 +630,10 @@ on this repository, not in a public issue. See [SECURITY.md](SECURITY.md).
 | `stompwatch run -config FILE -input WAV` | Processes a 48 kHz, 24-bit, stereo WAV file, then stops. |
 | `stompwatch calibrate -config FILE [-seconds N] [-input WAV] [-reference TEXT]` | Reads a calibrator tone and prints the `sensitivity_` lines for the config. |
 | `stompwatch verify-dsp -config FILE` | Runs the measurement checks (28 at the default filter cutoff) with the live settings. Exit status 1 if any fails. |
-| `stompwatch probe-camera -config FILE [-host HOST]` | Finds the camera's RTSP path and prints what it serves. |
+| `stompwatch test-camera -config FILE [-host HOST]` | Finds the camera's RTSP path and prints what it serves. |
 | `stompwatch reset -config FILE [-yes] [-reviewed]` | Deletes the recorded data. Preview without `-yes`. |
 
-`run` and `probe-camera` take `-ffmpeg PATH` when ffmpeg is not on `PATH`.
+`run` and `test-camera` take `-ffmpeg PATH` when ffmpeg is not on `PATH`.
 [deploy/stompwatch.conf.example](deploy/stompwatch.conf.example) describes
 every config key.
 
@@ -664,7 +664,7 @@ numbered list of decisions that changed it.
 | `internal/meter` | Levels, bins and frames, baseline, calibration |
 | `internal/detect` | Event detection and classification |
 | `internal/clip` | Filtered audio buffer and clip files |
-| `internal/video` | ffmpeg supervision, the segment ring, event clips, the probe, the clock check |
+| `internal/video` | ffmpeg supervision, the segment ring, event clips, the camera test, the clock check |
 | `internal/store` | SQLite schema, migrations, writes, snapshots |
 | `internal/health` | Collection status, heartbeat, free space |
 | `internal/tailnet` | Reading what Tailscale says about this node, read-only |

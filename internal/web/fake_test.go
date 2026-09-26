@@ -18,8 +18,8 @@ import (
 // than a stub of it.
 //
 //	FAKE_FFMPEG      run as ffmpeg rather than as the tests
-//	FAKE_PROBE_OK    a URL that contains this text succeeds; others fail
-//	FAKE_PROBE_INFO  stderr for a success, in ffmpeg's stream-info form
+//	FAKE_TEST_OK    a URL that contains this text succeeds; others fail
+//	FAKE_TEST_INFO  stderr for a success, in ffmpeg's stream-info form
 //	FAKE_STDERR      what a failure prints after the URL
 //	FAKE_SLEEP_MS    how long to hang before answering
 func TestMain(m *testing.M) {
@@ -40,8 +40,8 @@ func fakeFFmpeg() int {
 	if ms := os.Getenv("FAKE_SLEEP_MS"); ms != "" {
 		sleepMS(ms)
 	}
-	if ok := os.Getenv("FAKE_PROBE_OK"); ok != "" && strings.Contains(url, ok) {
-		fmt.Fprint(os.Stderr, os.Getenv("FAKE_PROBE_INFO"))
+	if ok := os.Getenv("FAKE_TEST_OK"); ok != "" && strings.Contains(url, ok) {
+		fmt.Fprint(os.Stderr, os.Getenv("FAKE_TEST_INFO"))
 		return 0
 	}
 	// Real ffmpeg repeats the URL it was given, password and all. That is

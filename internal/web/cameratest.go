@@ -9,11 +9,11 @@ import (
 	"github.com/minayousseif/stompwatch/internal/video"
 )
 
-// probeDeadline bounds one camera test. It is shorter than the probe's own
+// cameraTestDeadline bounds one camera test. It is shorter than the camera test's own
 // total patience, which is one timeout per path plus the clock reading, so
 // the request answers with a sentence rather than being cut off by the
 // 30-second deadline every request has.
-const probeDeadline = 25 * time.Second
+const cameraTestDeadline = 25 * time.Second
 
 // attemptJSON is one stream the test tried. Detail is ffmpeg's own words
 // for a failure and the negotiated stream for a success, and it has been
@@ -43,7 +43,7 @@ func audioTrack(a video.AudioInfo) audioTrackJSON {
 	return audioTrackJSON{Known: true, Present: a.Present, Codec: a.Codec, RateHz: a.RateHz}
 }
 
-type probeJSON struct {
+type cameraTestJSON struct {
 	Tried []attemptJSON `json:"tried"`
 	// SubPath and MainPath are the paths that answered, or empty when none
 	// did. The owner applies them through the settings form; this endpoint
@@ -59,14 +59,14 @@ type probeJSON struct {
 	Audio audioTrackJSON `json:"audio"`
 }
 
-// handleProbeCamera tries each RTSP path on the camera and reports what
-// works. It is the dashboard's form of stompwatch probe-camera and runs the
+// handleTestCamera tries each RTSP path on the camera and reports what
+// works. It is the dashboard's form of stompwatch test-camera and runs the
 // same code (SPEC.md section 7).
 //
 // It changes no setting. A test that quietly wrote what it found would take
 // the decision away from the owner, and a discovered path is exactly the
 // thing they should look at before saving.
-func (s *Server) handleProbeCamera(w http.ResponseWriter, r *http.Request) {
+func (s *Server) handleTestCamera(w http.ResponseWriter, r *http.Request) {
 	if p := parseQuery(r); !p.ok(w) {
 		return
 	}
@@ -96,18 +96,18 @@ func (s *Server) handleProbeCamera(w http.ResponseWriter, r *http.Request) {
 
 	// One test at a time. Each one makes the box open connections to the
 	// camera and start ffmpeg, and two sets of those help nobody.
-	if !s.probing.CompareAndSwap(false, true) {
+	if !s.testingCamera.CompareAndSwap(false, true) {
 		fail(w, http.StatusConflict,
 			"a camera test is already running. Wait for it to finish, then try again.")
 		return
 	}
-	defer s.probing.Store(false)
+	defer s.testingCamera.Store(false)
 
-	ctx, cancel := context.WithTimeout(r.Context(), s.probeDeadline)
+	ctx, cancel := context.WithTimeout(r.Context(), s.cameraTestDeadline)
 	defer cancel()
 
 	base := video.Stream{Host: c.CameraHost, Port: c.CameraPort, Creds: login.Creds}
-	rep := video.ProbeCamera(ctx, s.cfg.FFmpeg, s.cfg.FFmpegEnv, base,
+	rep := video.RunCameraTest(ctx, s.cfg.FFmpeg, s.cfg.FFmpegEnv, base,
 		video.CandidatePaths(c.CameraRTSPPath), c.CameraRTSPPathMain)
 
 	if errors.Is(ctx.Err(), context.DeadlineExceeded) && r.Context().Err() == nil {
@@ -117,7 +117,7 @@ func (s *Server) handleProbeCamera(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	out := probeJSON{Tried: []attemptJSON{}, SubPath: subPathOf(rep), MainPath: mainPathOf(rep)}
+	out := cameraTestJSON{Tried: []attemptJSON{}, SubPath: subPathOf(rep), MainPath: mainPathOf(rep)}
 	if rep.Sub.Working != nil {
 		out.Audio = audioTrack(rep.Sub.Working.Info.Audio)
 	}

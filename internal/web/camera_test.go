@@ -61,16 +61,16 @@ func TestThePasswordNeverReachesTheBrowser(t *testing.T) {
 		noPassword(t, "GET "+target, w.Body.String())
 	}
 
-	// The probe repeats what ffmpeg said, so both of its outcomes are
+	// The camera test repeats what ffmpeg said, so both of its outcomes are
 	// checked: the one where every path fails and ffmpeg echoes the URL it
 	// was given, and the one where a path works.
 	for _, works := range []string{"", "Preview"} {
-		p := withProbe(t, works, nil)
-		w := p.do(http.MethodPost, "/api/camera/probe", nil)
+		p := withCameraTest(t, works, nil)
+		w := p.do(http.MethodPost, "/api/camera/test", nil)
 		if w.Code != 200 {
-			t.Fatalf("POST /api/camera/probe = %d: %s", w.Code, w.Body.String())
+			t.Fatalf("POST /api/camera/test = %d: %s", w.Code, w.Body.String())
 		}
-		noPassword(t, "POST /api/camera/probe", w.Body.String())
+		noPassword(t, "POST /api/camera/test", w.Body.String())
 	}
 
 	// The credentials object must carry no password field at all: not

@@ -124,14 +124,14 @@ type Server struct {
 	loc *time.Location
 
 	// Intervals, as fields so a test does not have to wait real seconds.
-	timeout       time.Duration
-	staleAfter    time.Duration
-	keepalive     time.Duration
-	probeDeadline time.Duration
+	timeout            time.Duration
+	staleAfter         time.Duration
+	keepalive          time.Duration
+	cameraTestDeadline time.Duration
 
-	// probing is true while a camera test runs. One at a time: each one
+	// testingCamera is true while a camera test runs. One at a time: each one
 	// opens connections to the camera and starts ffmpeg.
-	probing atomic.Bool
+	testingCamera atomic.Bool
 
 	// reported remembers which events have already had a missing clip
 	// recorded, so one broken file does not fill the health log.
@@ -182,9 +182,9 @@ func New(c Config) (*Server, error) {
 	return &Server{
 		cfg: c, log: c.Log, now: c.Now, loc: time.Local,
 		timeout: requestTimeout, staleAfter: staleAfter, keepalive: keepalive,
-		probeDeadline: probeDeadline,
-		reported:      make(map[int64]bool),
-		clips:         newClipCache(),
+		cameraTestDeadline: cameraTestDeadline,
+		reported:           make(map[int64]bool),
+		clips:              newClipCache(),
 	}, nil
 }
 
@@ -213,7 +213,7 @@ func (s *Server) routes() []route {
 		{"GET", "/api/live", s.handleLive},
 		{"GET", "/api/health", s.handleHealth},
 		{"GET", "/api/system", s.handleSystem},
-		{"POST", "/api/camera/probe", s.handleProbeCamera},
+		{"POST", "/api/camera/test", s.handleTestCamera},
 		{"GET", "/api/logs", s.handleLogs},
 		{"GET", "/api/settings", s.handleGetSettings},
 		{"PUT", "/api/settings", s.handlePutSettings},

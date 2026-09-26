@@ -153,9 +153,9 @@ func keepsUsableAudio(args []string) bool {
 	return false
 }
 
-// ProbeArgs is the ffmpeg command line that reads one frame of s and throws
+// StreamTestArgs is the ffmpeg command line that reads one frame of s and throws
 // it away. ffmpeg prints the stream's codec, resolution, and rate on the way.
-func ProbeArgs(s Stream) []string {
+func StreamTestArgs(s Stream) []string {
 	return []string{
 		"-nostdin", "-hide_banner",
 		"-rtsp_transport", "tcp", "-timeout", rtspTimeout,

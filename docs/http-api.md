@@ -659,7 +659,7 @@ intelligible speech. False is the default (SPEC.md section 15 decision 22).
 false until something has asked the camera, and then `present` is false
 because nothing has been measured, not because the camera is silent. The
 collector asks once at start when `camera_audio` is on; `POST
-/api/camera/probe` asks whenever the owner presses the button, but it does
+/api/camera/test` asks whenever the owner presses the button, but it does
 not change this reading. With `present` true, `codec` and `rate_hz` are the
 track ffmpeg negotiated; with it false they are empty and zero. A camera
 that sends no audio track makes `camera_audio` do nothing.
@@ -721,10 +721,10 @@ node key, every peer's key and the tailnet's user list; the server decodes
 the few fields above out of it and drops the rest. The raw answer never
 reaches a response or the log.
 
-### `POST /api/camera/probe`
+### `POST /api/camera/test`
 
 Tries each RTSP path on the camera and reports what works. It is the
-dashboard's form of `stompwatch probe-camera` and runs the same code.
+dashboard's form of `stompwatch test-camera` and runs the same code.
 
 ```json
 {"tried": [{"path": "Preview_01_sub", "ok": true,
@@ -753,7 +753,7 @@ that answered, or empty when none did.
 `known` is false when no path answered, and then nothing about audio was
 measured. With `present` true, `codec` and `rate_hz` are the track ffmpeg
 negotiated, such as `aac` at 16000 Hz. Many cameras send no audio track, and
-then `camera_audio` does nothing (SPEC.md section 15 decision 22). The probe
+then `camera_audio` does nothing (SPEC.md section 15 decision 22). The camera test
 itself never records audio: it keeps `-an` and throws its output away.
 
 `clock_drift_ms` is the camera clock
@@ -763,10 +763,10 @@ report its clock, and then `clock_drift_ms` is zero.
 Failures:
 
 - 400 when `camera_host` is empty, or when no camera login is loaded. The
-  message says what to set. The probe always goes to `camera_host` and
+  message says what to set. The camera test always goes to `camera_host` and
   `camera_port` from the config file; the dashboard cannot change them.
-- 409 when a probe is already running. One probe runs at a time.
-- 504 when the probe runs past its deadline. The message says so plainly.
+- 409 when a camera test is already running. One camera test runs at a time.
+- 504 when the camera test runs past its deadline. The message says so plainly.
 
 ### `GET /api/logs?from=&to=&level=&q=&limit=&offset=`
 

@@ -140,7 +140,7 @@ func checkCameraAudio(cmd video.Command, streams []video.Stream, ring *video.Rin
 	for _, s := range streams {
 		paths = append(paths, s.Path)
 	}
-	rep := video.Probe(ctx, cmd, nil, streams[0], paths)
+	rep := video.TryPaths(ctx, cmd, nil, streams[0], paths)
 	if rep.Working == nil {
 		log.Warn("camera_audio is on, but no stream answered, so whether this camera sends any audio is not known",
 			"camera_audio", true, "paths_tried", len(rep.Tried))
@@ -246,10 +246,10 @@ func cameraEvents(log *slog.Logger, record func(time.Time, string, string, time.
 	}
 }
 
-// cmdProbeCamera tries each RTSP path on the camera and prints what works
+// cmdTestCamera tries each RTSP path on the camera and prints what works
 // (SPEC.md section 7). It is the tool for bringing a real camera up.
-func cmdProbeCamera(args []string, stdout, stderr io.Writer) int {
-	fl := flag.NewFlagSet("probe-camera", flag.ContinueOnError)
+func cmdTestCamera(args []string, stdout, stderr io.Writer) int {
+	fl := flag.NewFlagSet("test-camera", flag.ContinueOnError)
 	fl.SetOutput(stderr)
 	cfgPath := fl.String("config", defaultConfig, "config file")
 	ffmpeg := fl.String("ffmpeg", "", "ffmpeg program to run; empty means ffmpeg from PATH")
@@ -290,7 +290,7 @@ func cmdProbeCamera(args []string, stdout, stderr io.Writer) int {
 
 	// The dashboard's test button runs this same function, so the two can
 	// never disagree about what works.
-	rep := video.ProbeCamera(ctx, cmd, nil, base, video.CandidatePaths(s.CameraRTSPPath), s.CameraRTSPPathMain)
+	rep := video.RunCameraTest(ctx, cmd, nil, base, video.CandidatePaths(s.CameraRTSPPath), s.CameraRTSPPathMain)
 
 	fmt.Fprint(stdout, indent(rep.Sub.String()))
 	if rep.Sub.Working == nil {

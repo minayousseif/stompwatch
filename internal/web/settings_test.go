@@ -159,7 +159,7 @@ func TestSettingsListTheCameraKeys(t *testing.T) {
 // Test, and have ffmpeg send the camera login there. The PUT is refused, and
 // the camera test still goes to the host in the config file.
 func TestTheDashboardCannotSendTheLoginToAnotherHost(t *testing.T) {
-	e := withProbe(t, "", nil)
+	e := withCameraTest(t, "", nil)
 	for _, body := range []map[string]any{
 		{"camera_host": "attacker.example"},
 		{"camera_port": "8554"},
@@ -173,13 +173,13 @@ func TestTheDashboardCannotSendTheLoginToAnotherHost(t *testing.T) {
 		t.Errorf("the camera is %s:%d after the refused PUTs, want 127.0.0.1:554", got.CameraHost, got.CameraPort)
 	}
 
-	w := e.do(http.MethodPost, "/api/camera/probe", nil)
+	w := e.do(http.MethodPost, "/api/camera/test", nil)
 	if w.Code != 200 {
-		t.Fatalf("POST probe = %d: %s", w.Code, w.Body.String())
+		t.Fatalf("POST test = %d: %s", w.Code, w.Body.String())
 	}
 	detail := str(t, list(t, decode(t, w), "tried")[0], "detail")
 	if !contains(detail, "@127.0.0.1:554/") || contains(detail, "attacker") || contains(detail, "8554") {
-		t.Errorf("the probe tried %q, want the config file's 127.0.0.1:554", detail)
+		t.Errorf("the camera test tried %q, want the config file's 127.0.0.1:554", detail)
 	}
 }
 

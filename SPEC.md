@@ -417,7 +417,7 @@ pre-roll: by the time a camera knows something happened, the moment is gone.
   `rtsp://USER:PASS@HOST:554/Preview_01_sub` (current firmware) and
   `rtsp://USER:PASS@HOST:554/h264Preview_01_sub` (older firmware).
   Main stream substitutes `_main` for `_sub`. Provide a
-  `stompwatch probe-camera` subcommand that tries each form, reports which
+  `stompwatch test-camera` subcommand that tries each form, reports which
   works, and prints the negotiated resolution and frame rate.
 - Optionally pull a main-stream clip for the event window only. This is not
   built. The config key `video_main_on_event` is still parsed, so an old
@@ -1192,7 +1192,7 @@ The owner made these decisions on 2026-09-12.
     The default is **false**, so a fresh install forces `-an` on every
     ffmpeg command line, exactly as section 7 says. Only `camera_audio =
     true` drops it, and it drops it from two command lines: the segment
-    ring and the event-clip concat. The probe keeps `-an`, because it
+    ring and the event-clip concat. The camera test keeps `-an`, because it
     throws its output away; it reads the camera's audio track from the
     stream list ffmpeg prints about its input.
 
@@ -1258,9 +1258,9 @@ The owner made these decisions on 2026-09-12.
     clip is already reported, and not by running `ffprobe` by hand.
 
     *Many cameras send no audio at all, and then the setting does nothing.*
-    A setting that silently does nothing is a trap, so the probe reports
+    A setting that silently does nothing is a trap, so the camera test reports
     whether the stream carries an audio track, with its codec and sample
-    rate, in `stompwatch probe-camera` and in `POST /api/camera/probe`, and
+    rate, in `stompwatch test-camera` and in `POST /api/camera/test`, and
     `GET /api/system` carries the same fact. With `camera_audio` on, the
     collector asks the camera once at start and logs at WARN when the
     stream carries no audio track.

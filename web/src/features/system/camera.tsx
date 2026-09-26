@@ -4,7 +4,7 @@ import { EmptyNote, ErrorNote, Fact, Group, LoadingNote, Panel } from "@/compone
 import { Button } from "@/components/ui/button"
 import { SettingsForm } from "@/features/system/settings-form"
 import { formatBytes } from "@/features/system/status"
-import { api, errorMessage, type ProbeResult, type SystemStatus } from "@/lib/api"
+import { api, errorMessage, type CameraTestResult, type SystemStatus } from "@/lib/api"
 import { formatAgo, formatDayAndSeconds, formatSpan } from "@/lib/time"
 import { cn } from "@/lib/utils"
 
@@ -341,7 +341,7 @@ function FFmpegNote({ version }: { version: string }) {
 
 /**
  * What goes in the stream path fields. The owner types these, so the shape
- * is spelled out here rather than left to the probe: a path may carry a
+ * is spelled out here rather than left to the camera test: a path may carry a
  * query, and a camera that is on no list is set by hand.
  */
 function StreamPathNote() {
@@ -365,7 +365,7 @@ function StreamPathNote() {
 }
 
 /**
- * The dashboard's form of `stompwatch probe-camera`. It connects out to the
+ * The dashboard's form of `stompwatch test-camera`. It connects out to the
  * camera and says what answers. It changes nothing: what it finds is
  * offered to the form above, and the owner presses save.
  */
@@ -377,14 +377,14 @@ function CameraTest({
   onOffer: (values: Record<string, string>) => void
 }) {
   const [running, setRunning] = useState(false)
-  const [result, setResult] = useState<ProbeResult | null>(null)
+  const [result, setResult] = useState<CameraTestResult | null>(null)
   const [error, setError] = useState<unknown>(null)
 
   const run = () => {
     setRunning(true)
     setError(null)
     api
-      .probeCamera()
+      .testCamera()
       .then((answer) => {
         setResult(answer)
         setError(null)

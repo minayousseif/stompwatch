@@ -107,7 +107,7 @@ clip_lowpass_hz = 1000
 camera_host =
 camera_port = 554
 # Sub-stream path. Empty tries the known cameras below in turn, one on each
-# reconnect, so a full sweep takes about a minute. "stompwatch probe-camera"
+# reconnect, so a full sweep takes about a minute. "stompwatch test-camera"
 # prints the one to set. A path may carry a query, and a camera that is not
 # on the list is set here by hand.
 #
@@ -144,7 +144,7 @@ video_segment_seconds = 10
 # The collector warns at WARN at every start while this is true. It applies
 # only to video recorded after the restart; clips already on disk keep what
 # they hold. Many cameras send no audio track at all, and then this setting
-# does nothing: "stompwatch probe-camera" says whether yours does
+# does nothing: "stompwatch test-camera" says whether yours does
 # (SPEC.md section 15 decision 22).
 camera_audio = false
 # The NTP server the host and the camera clocks are checked against, every
