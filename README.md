@@ -108,6 +108,7 @@ the agents do the typing.
 - [Commands](#commands)
 - [Development](#development)
 - [Code layout](#code-layout)
+- [Contributing](#contributing)
 - [License](#license)
 
 ## What it does
@@ -678,6 +679,13 @@ numbered list of decisions that changed it.
 | `internal/verify` | The `verify-dsp` checks and the calibrator measurement |
 | `internal/testsignal` | Synthetic audio for tests |
 | `web/` | The React dashboard (Vite, Tailwind, shadcn/ui) |
+
+## Contributing
+
+StompWatch does not take contributions: pull requests and issues are
+switched off. You are welcome to fork it and change it for your own home,
+under the license below. To report a security problem, see
+[SECURITY.md](SECURITY.md).
 
 ## License
 
