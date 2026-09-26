@@ -93,6 +93,7 @@ the agents do the typing.
 - [Why this exists](#why-this-exists)
 - [How it was built](#how-it-was-built)
 - [What it does](#what-it-does)
+- [Screenshots](#screenshots)
 - [Architecture](#architecture)
 - [Tested hardware](#tested-hardware)
 - [Prerequisites](#prerequisites)
@@ -131,6 +132,17 @@ the agents do the typing.
 - **Watches itself.** Every capture gap, clock step, disk warning, and camera
   disconnect goes into a health log, and a dead-man's switch URL can alert
   you when the box stops.
+
+## Screenshots
+
+The dashboard, filled with invented data from the devserver.
+
+| | |
+|---|---|
+| ![The Live screen: the current level, the night's level trace with event dots, and a summary of the night](docs/screenshots/live.webp) | ![The Events screen: a table of events with class, peak, length, baseline, and review buttons](docs/screenshots/events.webp) |
+| **Live:** the level now, and the whole night at a glance. | **Events:** review each event with one key press. |
+| ![The detail of one event: the audio clip's waveform over the level trace, and a confirmed decision with a note](docs/screenshots/event.webp) | ![The System screen: capture, calibration, storage, running state, and Tailscale](docs/screenshots/system.webp) |
+| **Event:** play the filtered clip, see the levels around it, and decide. | **System:** is it measuring, how accurate it is, and what it stores. |
 
 ## Architecture
 
