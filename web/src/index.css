@@ -1,0 +1,301 @@
+@import "tailwindcss";
+@import "shadcn/tailwind.css";
+@import "tw-animate-css";
+@import "@fontsource-variable/geist";
+
+@custom-variant dark (&:is(.dark *));
+
+/* One typeface for the whole interface. Geist ships with the project, so the
+   browser never fetches a font from anywhere else. */
+@theme inline {
+  --font-heading: var(--font-sans);
+  --font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --color-verified: var(--verified);
+  --color-rejected: var(--rejected);
+  --color-unsure: var(--unsure);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+}
+
+:root {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.16 0 0);
+  --card: oklch(0.99 0 0);
+  --card-foreground: oklch(0.16 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.16 0 0);
+  --primary: oklch(0.2 0 0);
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.96 0 0);
+  --secondary-foreground: oklch(0.2 0 0);
+  --muted: oklch(0.96 0 0);
+  --muted-foreground: oklch(0.44 0 0);
+  --accent: oklch(0.94 0 0);
+  --accent-foreground: oklch(0.2 0 0);
+  --destructive: oklch(0.52 0.2 25);
+  --border: oklch(0.89 0 0);
+  --input: oklch(0.85 0 0);
+  --ring: oklch(0.45 0 0);
+  --sidebar: oklch(0.97 0 0);
+  --sidebar-foreground: oklch(0.24 0 0);
+  --sidebar-primary: oklch(0.2 0 0);
+  --sidebar-primary-foreground: oklch(0.99 0 0);
+  --sidebar-accent: oklch(0.92 0 0);
+  --sidebar-accent-foreground: oklch(0.2 0 0);
+  --sidebar-border: oklch(0.88 0 0);
+  --sidebar-ring: oklch(0.45 0 0);
+  --level-0: oklch(0.55 0.09 225);
+  --level-1: oklch(0.6 0.14 160);
+  --level-2: oklch(0.72 0.16 85);
+  --level-3: oklch(0.63 0.18 50);
+  --level-4: oklch(0.53 0.22 26);
+  --verified: oklch(0.52 0.14 155);
+  --rejected: oklch(0.52 0.19 25);
+  --unsure: oklch(0.62 0.15 75);
+  --radius: 0.375rem;
+}
+
+/* The chrome is achromatic. Every gray below has zero chroma, so the only
+   saturated color on screen is the level ramp and the review marks. */
+.dark {
+  /* The base is real black, not a near-black standing in for it. */
+  --background: oklch(0 0 0);
+  --foreground: oklch(0.94 0 0);
+  --card: oklch(0.155 0 0);
+  --card-foreground: oklch(0.94 0 0);
+  --popover: oklch(0.185 0 0);
+  --popover-foreground: oklch(0.94 0 0);
+  --primary: oklch(0.94 0 0);
+  --primary-foreground: oklch(0.14 0 0);
+  --secondary: oklch(0.24 0 0);
+  --secondary-foreground: oklch(0.94 0 0);
+  --muted: oklch(0.22 0 0);
+  --muted-foreground: oklch(0.72 0 0);
+  --accent: oklch(0.27 0 0);
+  --accent-foreground: oklch(0.97 0 0);
+  --destructive: oklch(0.64 0.19 25);
+  --border: oklch(0.3 0 0);
+  --input: oklch(0.34 0 0);
+  --ring: oklch(0.8 0 0);
+  --sidebar: oklch(0.09 0 0);
+  --sidebar-foreground: oklch(0.86 0 0);
+  --sidebar-primary: oklch(0.94 0 0);
+  --sidebar-primary-foreground: oklch(0.14 0 0);
+  --sidebar-accent: oklch(0.22 0 0);
+  --sidebar-accent-foreground: oklch(0.97 0 0);
+  --sidebar-border: oklch(0.26 0 0);
+  --sidebar-ring: oklch(0.8 0 0);
+
+  /* The level ramp, quiet to loud. It is the one place color carries
+       meaning, so it is the one place color is allowed. */
+  --level-0: oklch(0.6 0.08 225);
+  --level-1: oklch(0.72 0.13 165);
+  --level-2: oklch(0.85 0.16 100);
+  --level-3: oklch(0.75 0.18 55);
+  --level-4: oklch(0.63 0.22 26);
+
+  /* Review marks. */
+  --verified: oklch(0.72 0.13 155);
+  --rejected: oklch(0.64 0.18 25);
+  --unsure: oklch(0.82 0.15 85);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/60;
+  }
+
+  html {
+    @apply font-sans;
+  }
+
+  .dark {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    /* Every number in the interface sits on a fixed-width figure, so a
+           reading never shifts sideways as it updates. */
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Chart axis labels are SVG text and need to be told as well. */
+  svg text {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Written out rather than composed, so the ring is certain to be drawn. */
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  /* The one piece of motion in the interface: a row settles once the server
+     has stored the decision you just made. It answers an action and it
+     confirms a fact, which is the only reason to move anything here. */
+  @keyframes row-settle {
+    from {
+      background-color: color-mix(in oklab, var(--foreground) 14%, transparent);
+    }
+    to {
+      background-color: transparent;
+    }
+  }
+
+  .row-settle,
+  .row-settle > td {
+    animation: row-settle 600ms ease-out;
+  }
+
+  /* Motion answers an action. Nothing moves on its own. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   On paper.
+
+   A printed event is a different artifact from the screen. The screen is
+   black because review happens at 2am; a sheet is read in daylight, may be
+   photocopied, and leaves the building. So the printed page is black on
+   white, it carries only the measured facts, and every control goes.
+
+   Nothing here asks a component to know it is being printed. The theme
+   tokens are redefined and the components follow.
+   --------------------------------------------------------------------------- */
+@page {
+  margin: 15mm;
+}
+
+@media print {
+  :root,
+  .dark {
+    /* The theme provider writes color-scheme on the element itself, which
+       an ordinary declaration cannot reach. */
+    color-scheme: light !important;
+
+    --background: oklch(1 0 0);
+    --foreground: oklch(0.12 0 0);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.12 0 0);
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.12 0 0);
+    --primary: oklch(0.12 0 0);
+    --primary-foreground: oklch(1 0 0);
+    --secondary: oklch(0.95 0 0);
+    --secondary-foreground: oklch(0.12 0 0);
+    --muted: oklch(0.94 0 0);
+    --muted-foreground: oklch(0.3 0 0);
+    --accent: oklch(0.94 0 0);
+    --accent-foreground: oklch(0.12 0 0);
+    --border: oklch(0.6 0 0);
+    --input: oklch(0.6 0 0);
+    --ring: oklch(0.4 0 0);
+
+    /* The level ramp again, dark enough to read on white. The screen ramp is
+       chosen against black: its yellow measures 0.85 lightness, which prints
+       as almost nothing. These sit near one lightness, so a photocopy keeps
+       the trace and loses only the hue - and the height of the trace says
+       the level anyway. */
+    --level-0: oklch(0.47 0.11 235);
+    --level-1: oklch(0.46 0.12 160);
+    --level-2: oklch(0.5 0.12 85);
+    --level-3: oklch(0.5 0.17 45);
+    --level-4: oklch(0.47 0.2 25);
+    --verified: oklch(0.44 0.13 155);
+    --rejected: oklch(0.46 0.19 25);
+    --unsure: oklch(0.5 0.13 75);
+  }
+
+  /* Browsers drop every background and fill by default. That would take the
+     level trace, the waveform, and the review mark with it. */
+  *,
+  *::before,
+  *::after {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  html {
+    /* One knob for the whole sheet. The type and the spacing are both in
+       rem, so this is what fits a typical event on a single page. */
+    font-size: 12px;
+    background: #fff;
+  }
+
+  body {
+    background: #fff;
+  }
+
+  /* The chrome. None of it means anything on paper, and a control printed
+     on a sheet is a control nobody can press. */
+  [data-slot="sidebar"],
+  [data-slot="sidebar-trigger"],
+  [data-slot="sidebar-rail"],
+  [data-sonner-toaster] {
+    display: none !important;
+  }
+
+  [data-slot="sidebar-inset"] {
+    margin: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  /* A panel is never split across two sheets. A panel taller than a sheet
+     still breaks, because the alternative is losing it. */
+  section {
+    break-inside: avoid;
+  }
+
+  /* The charts are SVG, so they print at the printer's own resolution. They
+     are drawn at the width of the screen, which is wider than a sheet, so
+     they are scaled down to fit rather than cut off. */
+  .event-chart {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* 8% of black reads on a screen and disappears on paper. */
+  .event-band {
+    fill-opacity: 0.14;
+  }
+}

@@ -1,0 +1,47 @@
+[Unit]
+Description=Impact noise monitor
+# Never start on the eMMC if the SSD is not mounted.
+RequiresMountsFor=/data
+After=local-fs.target sound.target
+
+[Service]
+Type=simple
+User=stompwatch
+Group=audio
+# The camera login, when there is a camera. The file is optional, mode 0600,
+# and never part of the config file (SPEC.md section 3).
+EnvironmentFile=-/etc/stompwatch/camera.env
+ExecStart=/usr/local/bin/stompwatch run -config /etc/stompwatch/stompwatch.conf
+Restart=always
+RestartSec=5
+
+# The database, the clips and the logs are for the service user only.
+# The group, audio, often holds the login user too.
+UMask=0077
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/data
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectClock=true
+ProtectHostname=true
+# Go's net package reads the interfaces over netlink, and the tailscale CLI
+# talks to tailscaled over a unix socket.
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+LockPersonality=true
+# Empty: no capabilities at all, for the service and anything it starts.
+CapabilityBoundingSet=
+SystemCallArchitectures=native
+# Only the devices named below. No PrivateDevices=true: it hides /dev/snd.
+DevicePolicy=closed
+DeviceAllow=char-alsa rw
+
+[Install]
+WantedBy=multi-user.target

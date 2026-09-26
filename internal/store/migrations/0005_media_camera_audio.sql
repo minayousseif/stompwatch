@@ -1,0 +1,19 @@
+-- Schema version 5. Record whether a video clip carries the camera's own
+-- audio track.
+--
+-- The owner switched camera_audio on (SPEC.md section 15 decision 22). A clip
+-- cut while it is on holds the camera's microphone, unfiltered, and can hold
+-- intelligible speech; a clip cut with it off holds no audio at all. The
+-- setting can be changed and the clips already on disk do not change with it,
+-- so the clip has to say which kind it is. Without this column the screen
+-- that plays a clip could not warn that it has sound, and nothing could tell
+-- the two kinds apart afterwards.
+--
+-- A row written before this column existed carries 0, which reads as "no
+-- camera audio". That is the right answer for every clip recorded under the
+-- old rule, and the only one the old rows can give.
+--
+-- An audio clip is always 0: it is the measuring microphone's, low-pass
+-- filtered in the capture path at clip_lowpass_hz, and nothing about this
+-- setting touches it.
+ALTER TABLE event_media ADD COLUMN camera_audio INTEGER NOT NULL DEFAULT 0;

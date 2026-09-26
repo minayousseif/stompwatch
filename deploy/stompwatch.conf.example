@@ -1,0 +1,182 @@
+# stompwatch configuration. Copy to /etc/stompwatch/stompwatch.conf.
+# Format: key = value. Lines that start with # are comments.
+# An unknown key, a repeated key, or a bad value stops the program.
+
+# --- Storage (local disk only; never NFS) ---
+db_path = /data/noise.db
+clip_dir = /data/clips/audio
+# The log file lives here, as stompwatch.log. Every line also goes to the
+# journal. The dashboard reads this file for its log page.
+log_dir = /data/logs
+# Size at which the log file rotates, and how many files are kept including
+# the current one.
+log_file_mb = 20
+log_files = 5
+# Refuse to start below this much free space, and warn below the second value.
+disk_min_free_mb = 2048
+disk_warn_free_mb = 10240
+# Delete the audio and video files of events older than this many days. Only
+# the files go: the event, its seconds, its levels and its review stay, and
+# each deletion is recorded. 0 keeps every recording forever. The dashboard
+# can change it, down to 7 days.
+retention_days = 90
+# How often one-second bins are committed. Between 10s and 30s. A power loss
+# can lose at most this much of the newest data.
+batch_interval = 15s
+
+# --- Capture ---
+# Raw ALSA hardware device only. default, plug, and sound-server devices are
+# refused.
+capture_device = hw:EM01,0
+# The mic presents 2 channels. The startup log shows the level of each one.
+capture_channel = 0
+# The raw capture value that "amixer -c EM01 sget Mic" shows, or none if the
+# device has no capture control. The program refuses to start if the gain
+# differs, because a gain change invalidates every measurement.
+expected_capture_gain = none
+mixer_card = EM01
+mixer_control = Mic
+# Audio that does not change for this long is a failure.
+stuck_limit = 5s
+
+# --- Calibration ---
+# AES17 level of a 94 dB SPL tone at 1 kHz. Measure it with "stompwatch calibrate".
+sensitivity_dbfs = -13.0
+# How well that figure is known, and where it came from. Every level the
+# instrument reports rests on sensitivity_dbfs, so it says how sure it is
+# rather than printing the number as exact.
+#
+# datasheet, the default, is the manufacturer's figure for the model. The
+# EM-01 datasheet states -13 dBFS with plus or minus 2 dB of per-unit
+# tolerance, so a reading of 71.8 dB is somewhere between 69.8 and 73.8.
+# measured is this unit's own figure, read against a reference by
+# "stompwatch calibrate"; it needs the day and should name what it was
+# measured against. Set neither of those while the source is datasheet.
+#
+# sensitivity_uncertainty_db is the plus or minus, in dB, from 0 to 10.
+# None of these four is editable from the dashboard: they describe how the
+# instrument was calibrated, and a web form must not be able to claim a
+# calibration that never happened.
+sensitivity_source = datasheet
+sensitivity_uncertainty_db = 2.0
+sensitivity_measured_on =
+sensitivity_reference =
+# REW-format calibration file for this mic. Empty means no correction.
+calibration_file =
+
+# --- Baseline ---
+baseline_window = 10m
+baseline_percentile = 10
+
+# --- Detection ---
+threshold_db = 15.0
+min_duration_ms = 400
+hangover_ms = 2000
+cooldown_ms = 5000
+max_event_s = 300
+# Seconds of baseline needed before detection starts.
+min_baseline_s = 30
+
+# --- Clips ---
+# A clip runs from pre_roll_s before an event to post_roll_s after it, so
+# these two plus the event give a clip of about a minute. pre_roll_s may be
+# at most 60; the collector keeps 90 s of filtered audio in memory.
+pre_roll_s = 30
+post_roll_s = 30
+# Cutoff of the clip filter, in Hz. Clips are low-pass filtered at this
+# frequency and stored at twice it, in the capture path, so an unfiltered
+# clip never reaches the disk. There is no way to switch the filter off.
+#
+# 500 destroys speech intelligibility. The default is 1000, because a 500 Hz
+# clip of an impact is too muffled to tell one kind of noise from another.
+# At 1000 a clip holds twice the band and speech in the room may become
+# partly recoverable, so the collector warns at every start. Set it back to
+# 500 if that is not acceptable where the microphone stands. Some places
+# require the consent of everyone recorded; check the law where you live.
+#
+# Allowed: 500, 1000, 2000, 4000, 6000, 8000, 12000. A change needs a
+# restart, and it applies only to clips recorded after the restart. Clips
+# already on disk keep the cutoff they were recorded at.
+clip_lowpass_hz = 1000
+
+# --- Camera (Phase 2) ---
+# Host name or address of the camera. Empty switches video off, and then
+# nothing below does anything. The login is NOT here: put CAMERA_USER and
+# CAMERA_PASS in /etc/stompwatch/camera.env, mode 0600, which the service
+# loads, or name that file in camera_credentials_file for the commands.
+camera_host =
+camera_port = 554
+# Sub-stream path. Empty tries the known cameras below in turn, one on each
+# reconnect, so a full sweep takes about a minute. "stompwatch probe-camera"
+# prints the one to set. A path may carry a query, and a camera that is not
+# on the list is set here by hand.
+#
+#   Camera                     sub                                   main
+#   Reolink, current firmware  Preview_01_sub                        Preview_01_main
+#   Reolink, older firmware    h264Preview_01_sub                    h264Preview_01_main
+#   Amcrest and Dahua          cam/realmonitor?channel=1&subtype=1   cam/realmonitor?channel=1&subtype=0
+#   Hikvision                  Streaming/Channels/102                Streaming/Channels/101
+#   TP-Link Tapo               stream2                               stream1
+#   Foscam                     videoSub                              videoMain
+#   Ubiquiti                   s1                                    s0
+camera_rtsp_path =
+# Main-stream path. Empty takes the main path of the camera above whose sub
+# path is set. A sub path that is not on the list has no main path, and then
+# this key has to be set for the main stream to be tried at all.
+camera_rtsp_path_main =
+camera_credentials_file =
+# Event clips go under video_dir/YYYY/MM/DD, and the segment ring under
+# video_dir/ring. The ring keeps video_ring_minutes of ten-second segments,
+# copied from the camera and never re-encoded.
+video_dir = /data/clips/video
+video_ring_minutes = 10
+video_segment_seconds = 10
+# Record the camera's own audio track into the ring and the event clips.
+# false, the default, forces -an on every ffmpeg command line, so no camera
+# audio ever reaches the disk.
+#
+# true records it unfiltered. The camera's microphone is full bandwidth and
+# uncalibrated, so the track is not a measurement; it is a recording of the
+# room, and it holds intelligible speech. The measuring microphone's own
+# clips are not affected: they stay low-pass filtered at clip_lowpass_hz, in
+# the capture path, with no bypass.
+#
+# The collector warns at WARN at every start while this is true. It applies
+# only to video recorded after the restart; clips already on disk keep what
+# they hold. Many cameras send no audio track at all, and then this setting
+# does nothing: "stompwatch probe-camera" says whether yours does
+# (SPEC.md section 15 decision 22).
+camera_audio = false
+# The NTP server the host and the camera clocks are checked against, every
+# hour. More than 2 s of drift is a warning and a clock_drift health row.
+ntp_server = pool.ntp.org
+
+# --- Dead-man's switch ---
+# Ping URL, for example a healthchecks.io check. Empty disables it. It pings
+# only while audio arrives and bins are being written.
+heartbeat_url =
+heartbeat_interval = 5m
+heartbeat_stall_factor = 2
+
+# --- Web dashboard ---
+# Listen address. Keep it on loopback: "tailscale serve" or the reverse proxy
+# is the only way in, and each of those authenticates the caller first. An
+# empty value turns the server off.
+http_addr = 127.0.0.1:8080
+# Who the caller is. tailscale and trusted_header both read the identity from
+# a header that the layer in front set. none is for development only, and the
+# program refuses to start with none on an address that is not loopback.
+auth_mode = tailscale
+auth_header = Tailscale-User-Login
+auth_name_header = Tailscale-User-Name
+
+# --- Quiet hours ---
+# The nightly span the dashboard highlights and filters on, in local time,
+# 24-hour HH:MM. A span that wraps past midnight is the usual case.
+quiet_start = 22:00
+quiet_end = 07:00
+# A daily span with no events, no audio clips and no video, in local time,
+# written as HH:MM-HH:MM, for example 19:00-23:00. Empty means no pause. The
+# level of every second is still measured, so the record has no gap, and the
+# start and end of each pause go in the health log. The dashboard can change it.
+recording_pause =

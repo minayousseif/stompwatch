@@ -1,0 +1,11 @@
+-- Schema version 3. Record how many samples of a clip hit the limit.
+--
+-- A sample against the 16-bit rail is distortion, and a clip with hundreds
+-- of them does not sound like what the microphone heard. The collector
+-- already counted them and wrote a health row, which is the wrong place: the
+-- screen showing the clip could not say the clip was distorted.
+--
+-- A row written before this column existed carries 0. That reads as "none",
+-- which is the right answer for almost every clip and the only one the old
+-- rows can give.
+ALTER TABLE event_media ADD COLUMN clipped INTEGER NOT NULL DEFAULT 0;

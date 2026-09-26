@@ -1,0 +1,12 @@
+*.db
+*.db-shm
+*.db-wal
+.claude/worktrees/
+.dev-*/
+.dev/
+/bin/
+/devserver
+/stompwatch
+/noisemon
+/testdata/out/
+web/node_modules/

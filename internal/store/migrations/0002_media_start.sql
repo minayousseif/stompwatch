@@ -1,0 +1,14 @@
+-- Schema version 2. Record when a clip starts.
+--
+-- event_media said how long a clip is but not when its first sample was
+-- taken. The dashboard draws the waveform against a clock, so it had to guess
+-- the start from today's post_roll_s, which is wrong for any clip written
+-- while that setting held another value.
+--
+-- A row written before this column existed carries 0, which means "not
+-- recorded" and never the epoch. Every reader must tell the two apart.
+--
+-- The immutability triggers on event_media are BEFORE UPDATE and BEFORE
+-- DELETE on rows. ALTER TABLE changes the table, not a row, so it does not
+-- fire them and the existing rows are kept as they are.
+ALTER TABLE event_media ADD COLUMN started_ms INTEGER NOT NULL DEFAULT 0;
