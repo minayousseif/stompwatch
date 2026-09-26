@@ -108,6 +108,7 @@ the agents do the typing.
 - [Commands](#commands)
 - [Development](#development)
 - [Code layout](#code-layout)
+- [Credits](#credits)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -679,6 +680,20 @@ numbered list of decisions that changed it.
 | `internal/verify` | The `verify-dsp` checks and the calibrator measurement |
 | `internal/testsignal` | Synthetic audio for tests |
 | `web/` | The React dashboard (Vite, Tailwind, shadcn/ui) |
+
+## Credits
+
+StompWatch stands on these projects:
+
+- **Collector:** [Go](https://go.dev) and its standard library,
+  [modernc.org/sqlite](https://gitlab.com/cznic/sqlite),
+  [ALSA](https://www.alsa-project.org) (`arecord`), and
+  [FFmpeg](https://ffmpeg.org).
+- **Dashboard:** [React](https://react.dev), [Vite](https://vite.dev),
+  [Tailwind CSS](https://tailwindcss.com), [shadcn/ui](https://ui.shadcn.com),
+  [Radix UI](https://www.radix-ui.com), [Recharts](https://recharts.org),
+  [TanStack Table](https://tanstack.com/table),
+  [Lucide](https://lucide.dev), and the [Geist](https://vercel.com/font) font.
 
 ## Contributing
 
